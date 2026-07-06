@@ -62,18 +62,43 @@ function audioFileFor(text){
     return "assets/audio/"+[...s].map(c=>c.codePointAt(0).toString(16)).join("-")+".mp3";
   return null;
 }
+// clip playback: over http(s) use WebAudio through BGM's context — one tap
+// unlocks it for the whole session (mobile Safari/Chrome autoplay rules
+// block fresh <audio> elements outside gestures). file:// can't fetch, so
+// it keeps the <audio> element path.
+const CLIP_CACHE = {};
+let _clipNode = null;
+function playClipBuffer(buf){
+  try{ if (_clipNode) _clipNode.stop(); }catch(e){}
+  const src = BGM.ctx.createBufferSource(); src.buffer = buf;
+  src.connect(BGM.ctx.destination); // full volume, independent of music gain
+  _clipNode = src; src.start();
+}
+function playClip(f, plain){
+  if (location.protocol.startsWith("http") && BGM.ensureCtx()){
+    if (BGM.ctx.state==="suspended") BGM.ctx.resume();
+    if (CLIP_CACHE[f]){ playClipBuffer(CLIP_CACHE[f]); return; }
+    fetch(f).then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(ab=>BGM.ctx.decodeAudioData(ab))
+      .then(buf=>{
+        const keys = Object.keys(CLIP_CACHE);
+        if (keys.length > 80) delete CLIP_CACHE[keys[0]]; // bound memory
+        CLIP_CACHE[f]=buf; playClipBuffer(buf);
+      })
+      .catch(()=>synthSpeak(plain));
+    return;
+  }
+  if (_clip){ _clip.pause(); }
+  const a = new Audio(f); _clip = a;
+  a.onerror = ()=>synthSpeak(plain);
+  a.play().catch(()=>{});
+}
 function speak(text){
   if (!G || !G.settings.audio) return;
   const plain = text.replace(/\{([^}]+)\}/g,"$1").replace(/【[^|】]+\|([^】]+)】/g,"$1")
                     .replace(/<[^>]+>/g,"").replace(/[＿_]/g,"　");
   const f = audioFileFor(plain.trim());
-  if (f){ // real recorded audio first — speech synthesis only as fallback
-    if (_clip){ _clip.pause(); }
-    const a = new Audio(f); _clip = a;
-    a.onerror = ()=>synthSpeak(plain);
-    a.play().catch(()=>{});
-    return;
-  }
+  if (f){ playClip(f, plain); return; } // recorded audio first, synth fallback
   synthSpeak(plain);
 }
 function synthSpeak(plain){
@@ -242,10 +267,11 @@ let keyHandler = null;
 document.addEventListener("keydown", e=>{
   if (keyHandler) keyHandler(e);
 });
-// scale the fixed 960x680 frame down to fit small screens
+// scale the fixed 960x680 frame to FILL the viewport — up on big screens,
+// down on small ones, always preserving aspect
 function fitApp(){
-  const s = Math.min(1, window.innerWidth/970, window.innerHeight/690);
-  app.style.transform = s < 1 ? `scale(${s})` : "";
+  const s = Math.min(window.innerWidth/966, window.innerHeight/686);
+  app.style.transform = `scale(${s})`;
 }
 window.addEventListener("resize", fitApp); fitApp();
 // offline play (https/localhost only — file:// has no service workers)

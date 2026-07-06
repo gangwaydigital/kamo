@@ -210,13 +210,15 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
   box-shadow:inset 0 0 40px rgba(0,0,0,.35);}
 /* scale-to-fit small screens (JS sets the factor) */
 #app{transform-origin:center center;}
-/* touch d-pad — only shown for coarse pointers */
-.dpad{display:none; position:absolute; left:18px; bottom:18px; z-index:40;
-  flex-direction:column; align-items:center; gap:4px; opacity:.85;}
-.dpad .row{display:flex; gap:40px;}
-.dpad button{width:52px; height:52px; font-size:1.4rem; border-radius:14px;
-  background:rgba(35,40,71,.9);}
-@media (pointer: coarse){ .dpad{display:flex;} }
+/* touch d-pad — only shown for coarse pointers, thumb side */
+.dpad{display:none; position:absolute; right:16px; bottom:44px; z-index:40;
+  flex-direction:column; align-items:center; gap:6px; opacity:.9;
+  touch-action:manipulation;}
+.dpad .row{display:flex; gap:64px;}
+.dpad button{width:64px; height:64px; font-size:1.8rem; border-radius:18px;
+  background:rgba(35,40,71,.72); border-color:rgba(74,84,144,.8);}
+.dpad button:active{background:var(--accent);}
+@media (pointer: coarse){ .dpad{display:flex;} .map-hint{display:none;} }
 
 .title-screen{position:relative;}
 .title-video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;}
