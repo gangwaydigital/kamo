@@ -56,6 +56,11 @@ served over HTTPS.
 Move: arrow keys / WASD · Talk: walk into someone · Advance dialogue:
 click / Enter / Space · Answer quiz: click or keys 1–4 · Menu: Esc
 
+## License
+
+CC BY-NC-ND 4.0 — play and share freely with credit; no modifications or
+commercial use without permission. See [LICENSE.md](LICENSE.md).
+
 ## Dev
 
 `node validate.js` — integrity check for the curriculum data (every quest item
