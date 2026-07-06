@@ -61,7 +61,17 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
 .map-wrap{flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden;
   background:#0a0c16;}
 .map-grid{display:grid; line-height:1; font-size:26px; user-select:none;}
-.map-cell{width:34px; height:34px; display:flex; align-items:center; justify-content:center; position:relative;}
+.map-cell{width:38px; height:38px; display:flex; align-items:center; justify-content:center; position:relative;}
+.map-cell img.sprite{width:38px; height:38px; object-fit:contain; position:relative; z-index:1;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));}
+.map-cell img.chr{width:44px; height:44px; margin-top:-8px; z-index:2;}
+.map-cell img.deco{width:30px; height:30px; z-index:0; opacity:.95;}
+.map-cell img.flip{transform:scaleX(-1);}
+.map-cell .wtr{position:absolute; inset:0; background-size:304px; opacity:1;}
+.map-cell .wtr::after{content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg, rgba(255,255,255,.14), rgba(255,255,255,0) 60%);
+  opacity:0; animation:waterpulse 3.2s ease-in-out infinite; animation-delay:inherit;}
+@keyframes waterpulse{0%,100%{opacity:0} 50%{opacity:.7}}
 .map-cell .q{position:absolute; top:-6px; right:-2px; font-size:13px; animation:bob 1.4s infinite;}
 .map-name{position:absolute; top:8px; left:12px; background:rgba(13,15,26,.85); padding:4px 12px;
   border:1px solid var(--border); border-radius:8px; font-size:.9rem; z-index:5;}

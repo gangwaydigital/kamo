@@ -55,11 +55,26 @@ function speak(text){
   if (!G || !G.settings.audio || !window.speechSynthesis) return;
   const plain = text.replace(/\{([^}]+)\}/g,"$1").replace(/【[^|】]+\|([^】]+)】/g,"$1")
                     .replace(/<[^>]+>/g,"").replace(/[＿_]/g,"　");
-  speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(plain);
   u.lang = "ja-JP"; if (jaVoice) u.voice = jaVoice; u.rate = 0.85;
-  speechSynthesis.speak(u);
+  _utter = u; // GC guard: Chrome drops utterances that get collected while queued
+  speechSynthesis.cancel();
+  // Chrome/macOS wedges its speech engine after cancel storms; the
+  // pause()/resume() dance un-wedges it, and a watchdog retries once if the
+  // utterance is silently dropped anyway.
+  setTimeout(()=>{
+    speechSynthesis.pause(); speechSynthesis.resume();
+    speechSynthesis.speak(u);
+    setTimeout(()=>{
+      if (_utter===u && !speechSynthesis.speaking && !speechSynthesis.pending){
+        speechSynthesis.cancel();
+        speechSynthesis.pause(); speechSynthesis.resume();
+        speechSynthesis.speak(u);
+      }
+    }, 450);
+  }, 80);
 }
+let _utter = null;
 let actx=null;
 function sfx(good){
   try{
@@ -242,27 +257,41 @@ function mapDef(){ return MAPS[G.map]; }
 function cellAt(m,x,y){
   const row = Array.from(m.grid[y]||""); return row[x] || "#";
 }
+const CELL = 38;
+function spriteImg(src, fallback, cls, flip){
+  if (!src) return esc(fallback);
+  return `<img class="sprite ${cls}${flip?" flip":""}" src="${src}" data-f="${esc(fallback)}" onerror="this.replaceWith(this.dataset.f)">`;
+}
 function showMap(){
   scene="map";
   BGM.play(BGM.MAPTRACK[G.map]||"field1");
   const m = mapDef();
+  const art = MAPART[G.map] || {props:{}};
   const rows = m.grid.map(r=>Array.from(r));
   const mbg = MAP_BG[G.map] ? ` style="background:${MAP_BG[G.map]}"` : "";
-  let html = hudHtml() + `<div id="stage"><div class="map-wrap"${mbg}><div class="map-grid" style="grid-template-columns:repeat(${rows[0].length},34px)">`;
+  const gstyle = `grid-template-columns:repeat(${rows[0].length},${CELL}px);` +
+    (art.ground ? `background-image:url('${art.ground}');background-size:${CELL*4}px;` : "");
+  let html = hudHtml() + `<div id="stage"><div class="map-wrap"${mbg}><div class="map-grid" style="${gstyle}">`;
   for (let y=0;y<rows.length;y++){
     for (let x=0;x<rows[y].length;x++){
       const c = rows[y][x];
-      let inner = "";
-      if (x===G.x && y===G.y) inner = "🦆";
+      let inner = "", extra = "";
+      if (x===G.x && y===G.y)
+        inner = spriteImg(CHARS.kamo, "🦆", "chr", G.face==="r");
       else if (m.legend[c] && typeof m.legend[c]==="string"){
         const npc = m.legend[c];
         const q = questFor(npc) ? '<span class="q">❗</span>' : "";
-        inner = NPCS[npc].emoji + q;
+        inner = spriteImg(CHARS[npc], NPCS[npc].emoji, "chr") + q;
       }
-      else if (m.legend[c]) inner = "🚪";
+      else if (m.legend[c])
+        inner = spriteImg(m.legend[c].needCh ? DOOR_ART.fwd : DOOR_ART.back, "🚪", "prop");
+      else if (c==="~")
+        extra = `<div class="wtr" style="background-image:url('${WATER_TEX}');background-position:${-x*CELL}px ${-y*CELL}px;animation-delay:${((x+y)%7)*0.45}s"></div>`;
+      else if (art.props[c])
+        inner = spriteImg(art.props[c], m.tiles[c]||c, c==="," ? "deco":"prop", (x+y)%2===1);
       else if (c==="."||c===",") inner = m.tiles[c]||"";
       else inner = m.tiles[c]!==undefined ? m.tiles[c] : c;
-      html += `<div class="map-cell">${inner}</div>`;
+      html += `<div class="map-cell">${extra}${inner}</div>`;
     }
   }
   html += `</div></div>
@@ -283,6 +312,7 @@ function mapKeys(e){
   else if (k==="escape"){ showPause(); return; }
   else return;
   e.preventDefault();
+  if (dx>0) G.face="r"; else if (dx<0) G.face="l";
   tryMove(dx,dy);
 }
 function tryMove(dx,dy){

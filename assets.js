@@ -38,6 +38,30 @@ function asset(group, key){
   return ASSETS[group][key] || null;
 }
 
+// ---------- painted world (map view) ----------
+// Sprites are pre-keyed transparent PNGs; <img> onerror falls back to the emoji.
+const MAPART = {
+  shore:   {ground:"assets/img/ground_sand.jpg",   props:{"#":"assets/img/prop_palm.png",      ",":"assets/img/prop_shell.png"}},
+  port:    {ground:"assets/img/ground_planks.jpg", props:{"#":"assets/img/prop_lantern.png",   ",":"assets/img/prop_crates.png"}},
+  village: {ground:"assets/img/ground_grass.jpg",  props:{"#":"assets/img/prop_cottage.png",   ",":"assets/img/prop_flowers.png"}},
+  town:    {ground:"assets/img/ground_cobble.jpg", props:{"#":"assets/img/prop_shophouse.png", ",":"assets/img/prop_sakura.png"}},
+  capital: {ground:"assets/img/ground_paving.jpg", props:{"#":"assets/img/prop_pagoda.png",    ",":"assets/img/prop_toro.png"}},
+  mountain:{ground:"assets/img/ground_moss.jpg",   props:{"#":"assets/img/prop_cedar.png",     ",":"assets/img/prop_minitorii.png"}},
+  castle:  {ground:"assets/img/ground_slate.jpg",  props:{"#":"assets/img/prop_pillar.png",    ",":"assets/img/prop_candles.png"}},
+};
+const WATER_TEX = "assets/img/ground_water.jpg";
+const DOOR_ART = {fwd:"assets/img/prop_torii.png", back:"assets/img/prop_sign.png"};
+const CHARS = {
+  kamo:"assets/img/chr_kamo.png",
+  kame:"assets/img/chr_kame.png", usagi:"assets/img/chr_usagi.png",
+  fukurou:"assets/img/chr_fukurou.png", oumu:"assets/img/chr_oumu.png",
+  nekos:"assets/img/chr_nekos.png", kaeru:"assets/img/chr_kaeru.png",
+  kitsune:"assets/img/chr_kitsune.png", panda:"assets/img/chr_panda.png",
+  kuma:"assets/img/chr_kuma.png", inu:"assets/img/chr_inu.png",
+  tanuki:"assets/img/chr_tanuki.png", tora:"assets/img/chr_tora.png",
+  miko:"assets/img/chr_miko.png", ryu:"assets/img/chr_ryu.png",
+};
+
 // chapter-transition cutscene lines ([en, jp] — jp only from ch6)
 const CUTSCENE_LINES = {
   ch2:[[null,"The Great Noise fades. Beyond the bridge, sails and sharp new letters glitter in the morning sun — Katakana Harbor!",null]],
