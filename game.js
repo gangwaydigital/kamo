@@ -58,7 +58,8 @@ function audioFileFor(text){
   const s = text.trim();
   if (typeof SENT_AUDIO!=="undefined" && SENT_AUDIO[sentKey(s)]) return SENT_AUDIO[sentKey(s)];
   if (s && s!=="っ" && s!=="ー" && /^[ぁ-ゖァ-ヺー]+$/.test(s) && s.length<=8)
-    return "assets/audio/"+encodeURIComponent(s)+".mp3"; // files keep original kana/katakana names
+    // clips use ASCII hex-codepoint names (kana filenames break many upload tools)
+    return "assets/audio/"+[...s].map(c=>c.codePointAt(0).toString(16)).join("-")+".mp3";
   return null;
 }
 function speak(text){

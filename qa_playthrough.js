@@ -107,7 +107,11 @@ const R = vm.runInContext(`(function(){
   return {errors, warns, questions, cards,
     quests:Object.keys(G.quests).length, ch:G.ch, ended:G.ended,
     mastered:Object.keys(G.mastery).length, silent};
-})()`, Object.assign(ctx, {AUDIO_HAS: t=>audioFiles.has(t)}));
+})()`, Object.assign(ctx, {AUDIO_HAS: t=>{
+  if (audioFiles.has(t)) return true; // ascii names (g_*.mp3)
+  const hex = [...t].map(c=>c.codePointAt(0).toString(16)).join("-");
+  return audioFiles.has(hex);
+}}));
 
 console.log(JSON.stringify({quests:R.quests, chapterReached:R.ch, ended:R.ended,
   cardsStudied:R.cards, questionsGenerated:R.questions, itemsMastered:R.mastered}, null, 1));
