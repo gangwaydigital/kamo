@@ -279,7 +279,7 @@ function showTitle(){
     ${vid?`<video class="title-video" autoplay muted loop playsinline src="${vid}" onerror="this.remove()"></video><div class="title-scrim"></div>`:""}
     ${bg?"":'<div class="title-duck">🦆</div>'}
     <div class="title-main">カモのことだまクエスト</div>
-    <div class="title-sub">Kamo's Kotodama Quest — ゼロから N4 への RPG</div>
+    <div class="title-sub">Kamo's Kotodama Quest — ゼロから N2 への RPG</div>
     <div class="title-menu">
       <button class="primary" id="newbtn">はじめから <span class="jp-sub">New Game</span></button>
       <button id="contbtn" ${has?"":"disabled"}>つづきから <span class="jp-sub">Continue</span></button>

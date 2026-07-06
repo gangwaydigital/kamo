@@ -1,7 +1,7 @@
 {
   "name": "カモのことだまクエスト — Kamo's Kotodama Quest",
   "short_name": "カモクエ",
-  "description": "A storybook RPG that teaches Japanese from zero to JLPT N4 — no romaji, native audio, quests and boss battles.",
+  "description": "A storybook RPG that teaches Japanese from zero to JLPT N2 — no romaji, native audio, quests and boss battles.",
   "start_url": ".",
   "display": "standalone",
   "orientation": "landscape",
