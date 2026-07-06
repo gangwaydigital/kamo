@@ -50,6 +50,14 @@ const MAPART = {
   castle:  {ground:"assets/img/ground_slate.jpg",  props:{"#":"assets/img/prop_pillar.png",    ",":"assets/img/prop_candles.png"}},
 };
 const WATER_TEX = "assets/img/ground_water.jpg";
+// character-free location art for dialogue/study backdrops (never shows the
+// wrong character behind a conversation — chapter art is cutscene-only)
+const LOCBG = {
+  shore:"assets/img/bg_shore.jpg", port:"assets/img/bg_port.jpg",
+  village:"assets/img/bg_village.jpg", town:"assets/img/bg_town.jpg",
+  capital:"assets/img/bg_capital.jpg", mountain:"assets/img/bg_mountain.jpg",
+  castle:"assets/img/bg_castle.jpg",
+};
 const DOOR_ART = {fwd:"assets/img/prop_torii.png", back:"assets/img/prop_sign.png"};
 const CHARS = {
   kamo:"assets/img/chr_kamo.png",

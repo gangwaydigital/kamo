@@ -51,10 +51,30 @@ function pickVoice(){
             vs.find(v=>v.lang.startsWith("ja")) || null;
 }
 if (window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+let _clip = null;
+function audioFileFor(text){
+  // pre-generated native audio exists for every vocab word and hiragana sound
+  if (typeof VOCAB!=="undefined" && VOCAB[text]) return "assets/audio/"+encodeURIComponent(text)+".mp3";
+  if (typeof KANA!=="undefined" && KANA[text] && KANA[text].type==="hira" && text!=="っ")
+    return "assets/audio/"+encodeURIComponent(text)+".mp3";
+  return null;
+}
 function speak(text){
-  if (!G || !G.settings.audio || !window.speechSynthesis) return;
+  if (!G || !G.settings.audio) return;
   const plain = text.replace(/\{([^}]+)\}/g,"$1").replace(/【[^|】]+\|([^】]+)】/g,"$1")
                     .replace(/<[^>]+>/g,"").replace(/[＿_]/g,"　");
+  const f = audioFileFor(plain.trim());
+  if (f){ // real recorded audio first — speech synthesis only as fallback
+    if (_clip){ _clip.pause(); }
+    const a = new Audio(f); _clip = a;
+    a.onerror = ()=>synthSpeak(plain);
+    a.play().catch(()=>{});
+    return;
+  }
+  synthSpeak(plain);
+}
+function synthSpeak(plain){
+  if (!window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(plain);
   u.lang = "ja-JP"; if (jaVoice) u.voice = jaVoice; u.rate = 0.85;
   _utter = u; // GC guard: Chrome drops utterances that get collected while queued
@@ -195,7 +215,7 @@ function gainXp(n){
   if (leveled) toast("🎉 "+Lp("levelup")+" "+Lp("level")+" "+G.level);
 }
 function stageBgStyle(dark){
-  const bg = G && asset("scenes","ch"+G.ch);
+  const bg = G && (LOCBG[G.map] || asset("scenes","ch"+G.ch));
   if (!bg) return "";
   const a = dark||0.9;
   return ` style="background-image:linear-gradient(rgba(13,15,26,${a}),rgba(13,15,26,${a+0.03})),url('${bg}');background-size:cover;background-position:center"`;
@@ -397,7 +417,7 @@ function finishQuest(){
 // ---------- dialogue ----------
 function runDialogue(lines, done, bg){
   scene="dialogue";
-  if (!bg && G) bg = asset("scenes","ch"+G.ch); // never a blank backdrop
+  if (!bg && G) bg = LOCBG[G.map] || asset("scenes","ch"+G.ch); // never a blank backdrop
   let i=0;
   const render = ()=>{
     if (i>=lines.length){ done(); return; }
