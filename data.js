@@ -736,7 +736,8 @@ K("究","きゅう","research deeply","けんきゅう");
 // Gr(id, pattern, enExplain|null, jpExplain, examples[[jp,en|null],...])
 // N4 entries have en=null: they are only ever taught in Japanese.
 const GRAMMAR = {};
-function Gr(id,pat,en,jp,ex){ GRAMMAR[id] = {id,pat,en,jp,ex}; }
+// lv: JLPT level (5..2). Omitted for original entries: en!=null ⇒ 5, else 4.
+function Gr(id,pat,en,jp,ex,lv){ GRAMMAR[id] = {id,pat,en,jp,ex,lv}; }
 // ---- N5 ----
 Gr("g_desu","〜は 〜です",
   "「は」marks the topic. 「です」means 'is/am/are'. \"As for X, it is Y.\"",

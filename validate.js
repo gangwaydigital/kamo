@@ -1,8 +1,8 @@
 // node validate.js — data integrity check (run after editing data.js/quests.js)
 const fs = require("fs"), vm = require("vm");
-const ctx = { window:{}, document:null };
+const ctx = { window:{}, document:{addEventListener(){}} };
 vm.createContext(ctx);
-for (const f of ["data.js","quests.js"])
+for (const f of ["data.js","data3.js","quests.js","assets.js","quests3.js"])
   vm.runInContext(fs.readFileSync(__dirname+"/"+f,"utf8"), ctx, {filename:f});
 const {KANA,VOCAB,KANJI,GRAMMAR,UI,NPCS,MAPS,QUESTS,GQUIZ,CHAPTERS,CHAPTER_MAP} =
   vm.runInContext("({KANA,VOCAB,KANJI,GRAMMAR,UI,NPCS,MAPS,QUESTS,GQUIZ,CHAPTERS,CHAPTER_MAP})", ctx);

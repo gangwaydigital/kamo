@@ -184,6 +184,11 @@ function loadFrom(i){
   try{ const d=JSON.parse(raw); G = Object.assign(newState(), d.g);
        G.settings = Object.assign({furigana:true,audio:true}, G.settings);
        activeQuest = null; stepIdx = 0;
+       // content updates: if this chapter is fully cleared, roll into the next
+       while (CHAPTERS[G.ch+1] && QUESTS.filter(q=>q.ch===G.ch).every(q=>G.quests[q.id])){
+         G.ch++; G.ended = false;
+         G.map = CHAPTER_MAP[G.ch]; G.x = MAPS[G.map].start[0]; G.y = MAPS[G.map].start[1];
+       }
        sessionStart = Date.now(); return true; }
   catch(e){ return false; }
 }
@@ -435,7 +440,7 @@ function finishQuest(){
       else setTimeout(()=>toast("📖 "+Lp("chapterup")+" → "+T(CHAPTERS[G.ch].title[1]),3600), 1300);
     }
     saveTo(0); // autosave
-    const finish = ()=> q.id==="q8_3" ? showEnding() : showMap();
+    const finish = ()=> q.final ? showEnding() : showMap();
     if (chapterUp){
       const key = "ch"+G.ch;
       const playCh = ()=> CUTSCENE_LINES[key] ? runDialogue(CUTSCENE_LINES[key], finish, asset("scenes",key)) : finish();
@@ -681,17 +686,19 @@ function grammarQ(id){
 }
 let _taughtNow = [];
 function taughtNow(id){ return _taughtNow.includes(id); }
+function grammarLv(g){ return g.lv || (g.en!=null ? 5 : 4); }
 function buildQuestions(items, n, scope){
   let pool = items.slice();
-  if (scope==="n5"){
+  if (scope==="all"){
+    pool = Object.keys(G.mastery);
+  } else if (scope){ // "n5" = exactly N5; "lv4"/"lv3"/"lv2" = that level and easier
+    const minLv = scope==="n5" ? 5 : parseInt(scope.slice(2),10);
     pool = Object.keys(G.mastery).filter(id=>{
       const k=kindOf(id);
-      if (k==="vocab") return VOCAB[id].lv===5;
-      if (k==="grammar") return GRAMMAR[id].en!=null;
+      if (k==="vocab") return scope==="n5" ? VOCAB[id].lv===5 : VOCAB[id].lv>=minLv;
+      if (k==="grammar") return scope==="n5" ? GRAMMAR[id].en!=null : grammarLv(GRAMMAR[id])>=minLv;
       return k==="kanji";
     });
-  } else if (scope==="all"){
-    pool = Object.keys(G.mastery);
   }
   _taughtNow = pool;
   let ids = shuffle(pool);
@@ -790,7 +797,7 @@ function runQuestions(qs, pass, battle, cb){
         if (ok){ battle.foeHp--; battle.hit=true; }
         else G.hp = Math.max(0, G.hp - battle.dmg);
       }
-      setTimeout(()=>{ i++; render(); }, ok?700:1400);
+      setTimeout(()=>{ i++; render(); }, window.QA_FAST ? 50 : (ok?700:1400));
     };
     if (q.typed){
       wireKanaPad(v=>judge(v===q.typed));
