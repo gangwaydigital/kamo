@@ -12,7 +12,7 @@ a creeping Silence has stolen them all, including your voice.
 
 ## Play
 
-Open `index.html` in any modern browser — desktop or phone. That's it: no
+**Play now: <https://gangwaydigital.github.io/kamo/>** — or open `index.html` in any modern browser, desktop or phone. That's it: no
 install, no build, no account. All pronunciation is **recorded native audio**
 (683 clips shipped with the game); it also installs as an offline PWA when
 served over HTTPS.
