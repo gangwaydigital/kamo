@@ -13,6 +13,7 @@ const ASSETS = {
     ch5:"assets/img/scene_ch5.jpg", ch6:"assets/img/scene_ch6.jpg",
     ch7:"assets/img/scene_ch7.jpg", ch8:"assets/img/scene_ch8.jpg",
     n5:"assets/img/scene_n5.jpg",   ending:"assets/img/scene_ending.jpg",
+    title_video:"assets/video/title.mp4",
   },
   portraits:{
     kame:"assets/img/npc_kame.jpg", usagi:"assets/img/npc_usagi.jpg",

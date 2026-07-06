@@ -80,7 +80,8 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
 /* ---------- panels (study/quiz/menus) ---------- */
 .panel{flex:1; display:flex; flex-direction:column; padding:18px; gap:12px; overflow:hidden;}
 .panel h2{color:var(--gold); font-size:1.3rem; text-align:center;}
-.panel .body{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; align-items:center;}
+.panel .body, .battle .body{flex:1; overflow-y:auto; display:flex; flex-direction:column;
+  gap:12px; align-items:center; justify-content:center; width:100%;}
 .panel .foot{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
 
 .card{background:var(--panel2); border:2px solid var(--border); border-radius:14px;
@@ -119,7 +120,7 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
 
 /* battle */
 .battle{flex:1; display:flex; flex-direction:column; padding:14px; gap:8px;
-  background:radial-gradient(ellipse at 50% 20%, #2a1e4e 0%, var(--bg) 75%);}
+  background:radial-gradient(ellipse at 50% 20%, rgba(42,30,78,.7) 0%, rgba(13,15,26,.55) 75%);}
 .battle .foe{text-align:center;}
 .battle .foe .sprite{font-size:4.6rem; display:inline-block;}
 .battle .foe .sprite.hit{animation:shake .35s;}
@@ -189,6 +190,10 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
 .map-grid{padding:8px; border-radius:12px; background:rgba(0,0,0,.18);
   box-shadow:inset 0 0 40px rgba(0,0,0,.35);}
 .title-screen{position:relative;}
+.title-video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;}
+.title-scrim{position:absolute; inset:0; z-index:1;
+  background:linear-gradient(rgba(10,12,26,.35), rgba(10,12,26,.75));}
+.title-screen > *:not(.title-video):not(.title-scrim){position:relative; z-index:2;}
 .panel, .battle{position:relative;}
 .levelup{color:var(--gold); font-weight:bold; font-size:1.3rem; animation:bob 1s infinite;}
 .audio-btn{font-size:1.3rem; background:none; border:none; cursor:pointer; padding:0 6px;}

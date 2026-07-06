@@ -168,6 +168,7 @@ function hudHtml(){
     <span class="stat">🪙 ${G.gold}</span>
     <span class="spacer"></span>
     <span class="stat dim">${T((CHAPTERS[G.ch]||CHAPTERS[8]).title[stage()>=2?1:0] ?? (CHAPTERS[G.ch]||CHAPTERS[8]).title[1])}</span>
+    <button id="musicbtn" style="padding:.2em .7em">${G.settings.music!==false?"🎵":"🔇"}</button>
     <button id="pausebtn" style="padding:.2em .7em">☰</button>
   </div>`;
 }
@@ -177,6 +178,12 @@ function gainXp(n){
   let leveled=false;
   while (G.xp >= xpNeed()){ G.xp -= xpNeed(); G.level++; G.maxhp += 10; G.hp = G.maxhp; leveled=true; }
   if (leveled) toast("🎉 "+Lp("levelup")+" "+Lp("level")+" "+G.level);
+}
+function stageBgStyle(dark){
+  const bg = G && asset("scenes","ch"+G.ch);
+  if (!bg) return "";
+  const a = dark||0.9;
+  return ` style="background-image:linear-gradient(rgba(13,15,26,${a}),rgba(13,15,26,${a+0.03})),url('${bg}');background-size:cover;background-position:center"`;
 }
 function toast(html, ms){
   const t = el(`<div class="toast">${html}</div>`);
@@ -189,6 +196,15 @@ let keyHandler = null;
 document.addEventListener("keydown", e=>{
   if (keyHandler) keyHandler(e);
 });
+// music toggle lives in the HUD of every scene — one delegated listener
+document.addEventListener("click", e=>{
+  const b = e.target.closest("#musicbtn");
+  if (!b || !G) return;
+  e.stopPropagation();
+  G.settings.music = G.settings.music===false;
+  BGM.setVol();
+  b.textContent = G.settings.music!==false ? "🎵" : "🔇";
+}, true);
 
 // ---------- title ----------
 function showTitle(){
@@ -196,7 +212,9 @@ function showTitle(){
   BGM.play("title");
   const has = [1,2,3,0].some(i=>slotInfo(i));
   const bg = asset("scenes","title");
+  const vid = asset("scenes","title_video");
   app.innerHTML = `<div class="title-screen" ${bg?`style="background-image:linear-gradient(rgba(10,12,26,.45),rgba(10,12,26,.8)),url('${bg}');background-size:cover;background-position:center"`:""}>
+    ${vid?`<video class="title-video" autoplay muted loop playsinline src="${vid}" onerror="this.remove()"></video><div class="title-scrim"></div>`:""}
     ${bg?"":'<div class="title-duck">🦆</div>'}
     <div class="title-main">カモのことだまクエスト</div>
     <div class="title-sub">Kamo's Kotodama Quest — ゼロから N4 への RPG</div>
@@ -349,6 +367,7 @@ function finishQuest(){
 // ---------- dialogue ----------
 function runDialogue(lines, done, bg){
   scene="dialogue";
+  if (!bg && G) bg = asset("scenes","ch"+G.ch); // never a blank backdrop
   let i=0;
   const render = ()=>{
     if (i>=lines.length){ done(); return; }
@@ -429,7 +448,7 @@ function showStudy(kind, items, done){
   const render=()=>{
     const id=items[i];
     const dots = items.map((_,j)=>`<span class="${j<i?"on":j===i?"now":""}"></span>`).join("");
-    app.innerHTML = hudHtml()+`<div id="stage"><div class="panel">
+    app.innerHTML = hudHtml()+`<div id="stage"${stageBgStyle()}><div class="panel">
       <h2>📖 ${Lp("study")} — ${i+1} / ${items.length}</h2>
       <div class="body">
         <div class="card">
@@ -659,7 +678,7 @@ function runQuestions(qs, pass, battle, cb){
       `<h2>❓ ${Lp("question")} ${i+1} / ${qs.length}　<span class="dim">✔ ${correct}${pass?" / "+pass:""}</span></h2>`;
     const body = q.typed ? q.q + kanaPadHtml() :
       q.q + `<div class="quiz-opts">${q.opts.map((o,j)=>`<button data-i="${j}">${o}</button>`).join("")}</div>`;
-    app.innerHTML = hudHtml()+`<div id="stage"><div class="${battle?"battle":"panel"}">
+    app.innerHTML = hudHtml()+`<div id="stage"${battle?stageBgStyle(0.82):stageBgStyle()}><div class="${battle?"battle":"panel"}">
       ${head}<div class="body" style="justify-content:center">${body}
       <div class="feedback" id="fb"></div></div>
       ${battle?`<div class="you"><span class="sprite">🦆</span><span>${Lp("hp")} ${G.hp}/${G.maxhp}</span></div>`:""}
