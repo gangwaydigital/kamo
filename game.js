@@ -444,7 +444,8 @@ function finishQuest(){
     if (chapterUp){
       const key = "ch"+G.ch;
       const playCh = ()=> CUTSCENE_LINES[key] ? runDialogue(CUTSCENE_LINES[key], finish, asset("scenes",key)) : finish();
-      if (q.ch===5 && CUTSCENE_LINES.n5) runDialogue(CUTSCENE_LINES.n5, playCh, asset("scenes","n5"));
+      const exam = q.ch===5 ? "n5" : q.ch===12 ? "n3" : null; // level-pass interludes
+      if (exam && CUTSCENE_LINES[exam]) runDialogue(CUTSCENE_LINES[exam], playCh, asset("scenes",exam));
       else playCh();
     } else finish();
   };
@@ -1020,7 +1021,7 @@ function showEnding(){
   BGM.play("ending");
   const words = Object.keys(G.mastery).filter(id=>VOCAB[id]).length;
   const kanji = Object.keys(G.mastery).filter(id=>KANJI[id]).length;
-  const ebg = asset("scenes","ending");
+  const ebg = asset("scenes", G.ch>=16 ? "trueend" : "ending");
   app.innerHTML = `<div class="title-screen" ${ebg?`style="background-image:linear-gradient(rgba(10,12,26,.5),rgba(10,12,26,.82)),url('${ebg}');background-size:cover;background-position:center"`:""}>
     <div class="title-duck">🦆✨</div>
     <div class="title-main">おわり</div>

@@ -114,6 +114,55 @@ Object.assign(CHAPTERS, {
 Object.assign(CHAPTER_MAP, {9:"city",10:"city",11:"offices",12:"offices",
   13:"oldcapital",14:"oldcapital",15:"palace",16:"palace"});
 
+// ---- expansion art wiring (this file loads after assets.js) ----
+Object.assign(ASSETS.scenes, {
+  ch9:"assets/img/scene_ch9.jpg", ch10:"assets/img/scene_ch10.jpg",
+  ch11:"assets/img/scene_ch11.jpg", ch12:"assets/img/scene_ch12.jpg",
+  ch13:"assets/img/scene_ch13.jpg", ch14:"assets/img/scene_ch14.jpg",
+  ch15:"assets/img/scene_ch15.jpg", ch16:"assets/img/scene_ch16.jpg",
+  n3:"assets/img/scene_n3.jpg", trueend:"assets/img/scene_trueend.jpg",
+});
+Object.assign(ASSETS.portraits, {
+  karasu:"assets/img/npc_karasu.jpg", risu:"assets/img/npc_risu.jpg",
+  shika:"assets/img/npc_shika.jpg", hitsuji:"assets/img/npc_hitsuji.jpg",
+  sagi:"assets/img/npc_sagi.jpg", tsuru:"assets/img/npc_tsuru.jpg",
+  kirin:"assets/img/npc_kirin.jpg", tei:"assets/img/npc_tei.jpg",
+});
+Object.assign(ASSETS.battles, {
+  q9_5:"assets/img/foe_fogimp.jpg",      q10_5:"assets/img/foe_papergolem.jpg",
+  q11_5:"assets/img/foe_zangyou.jpg",    q12_5:"assets/img/foe_fogminister.jpg",
+  q13_5:"assets/img/foe_rumor.jpg",      q14_5:"assets/img/foe_inkwraith.jpg",
+  q15_5:"assets/img/foe_courtshadow.jpg",q16_5:"assets/img/foe_teiboss.jpg",
+});
+Object.assign(CHARS, {
+  karasu:"assets/img/chr_karasu.png", risu:"assets/img/chr_risu.png",
+  shika:"assets/img/chr_shika.png", hitsuji:"assets/img/chr_hitsuji.png",
+  sagi:"assets/img/chr_sagi.png", tsuru:"assets/img/chr_tsuru.png",
+  kirin:"assets/img/chr_kirin.png", tei:"assets/img/chr_tei.png",
+});
+Object.assign(LOCBG, {
+  city:"assets/img/bg_city.jpg", offices:"assets/img/bg_offices.jpg",
+  oldcapital:"assets/img/bg_oldcapital.jpg", palace:"assets/img/bg_palace.jpg",
+});
+Object.assign(MAPART, {
+  city:      {ground:"assets/img/ground_citywalk.jpg", props:{"#":"assets/img/prop_citybldg.png",   ",":"assets/img/prop_streetlamp.png"}},
+  offices:   {ground:"assets/img/ground_plaza.jpg",    props:{"#":"assets/img/prop_officetower.png",",":"assets/img/prop_streettree.png"}},
+  oldcapital:{ground:"assets/img/ground_flagstone.jpg",props:{"#":"assets/img/prop_machiya.png",    ",":"assets/img/prop_maple.png"}},
+  palace:    {ground:"assets/img/ground_lacquer.jpg",  props:{"#":"assets/img/prop_shrinepillar.png",",":"assets/img/prop_candlestand.png"}},
+});
+Object.assign(CUTSCENE_LINES, {
+  ch9:[[null,null,"【竜|りゅう】と ともに、【海|うみ】を わたる。【本土|ほんど】には「もや」が かかっていた——ことばを ぼやけさせる、しずかな きり。"],
+       [null,null,"ことのは【市|し】。ここから、あたらしい【旅|たび】が はじまる。"]],
+  ch10:[[null,null,"【第十章|だいじゅっしょう】——【大学|だいがく】。まなびの【門|もん】が ひらく。"]],
+  ch11:[[null,null,"【第十一章|だいじゅういっしょう】——【会社|かいしゃ】。はたらく ことばの【世界|せかい】へ。"]],
+  ch12:[[null,null,"【第十二章|だいじゅうにしょう】——くらしの【街|まち】。もやが、こく なってきた……"]],
+  n3:[[null,null,"もやの【大臣|だいじん】は きえた。【市|し】の ことばが、はっきりと かがやきだす。"]],
+  ch13:[[null,null,"【第十三章|だいじゅうさんしょう】——ふることの【都|みやこ】。ふるい ことばが ねむる【場所|ばしょ】。"]],
+  ch14:[[null,null,"【第十四章|だいじゅうよんしょう】——【文学|ぶんがく】の【森|もり】。ページの【葉|は】が、かぜに うたう。"]],
+  ch15:[[null,null,"【第十五章|だいじゅうごしょう】——まつりごとの【丘|おか】。ことばは【世界|せかい】を うごかす。"]],
+  ch16:[[null,null,"【第十六章|だいじゅうろくしょう】——ことだま【本殿|ほんでん】。【静寂|せいじゃく】の【帝|みかど】が、まっている。"]],
+});
+
 // map ambience + area music (this file loads after assets.js)
 Object.assign(BGM.MAPTRACK, {city:"field2", offices:"field2", oldcapital:"field3", palace:"dark"});
 Object.assign(MAP_BG, {
