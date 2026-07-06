@@ -215,8 +215,18 @@ const BGM = {
     [0,1,2,3,4].forEach((d,i)=>this.pluck(t0+i*0.09, this.freq(72+sc[d]), 0.5));
   },
 };
+// iOS silences WebAudio under the ringer switch unless the page is "playing
+// media" — a looping silent <audio> flips the audio session to playback.
+let _silentEl=null;
+function unlockMedia(){
+  if (_silentEl) return;
+  _silentEl = new Audio("data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA");
+  _silentEl.loop = true;
+  _silentEl.play().catch(()=>{ _silentEl=null; }); // retry on next gesture
+}
 // audio contexts need a user gesture — start pending track on the first one
-["pointerdown","keydown"].forEach(ev=>document.addEventListener(ev,()=>{
+["pointerdown","keydown","touchend"].forEach(ev=>document.addEventListener(ev,()=>{
+  unlockMedia();
   if (BGM.ensureCtx()){
     if (BGM.ctx.state==="suspended") BGM.ctx.resume();
     if (BGM.pending && !BGM.track) BGM.play(BGM.pending);

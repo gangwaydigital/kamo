@@ -238,6 +238,7 @@ function hudHtml(){
     <span class="spacer"></span>
     <span class="stat dim">${T((CHAPTERS[G.ch]||CHAPTERS[8]).title[stage()>=2?1:0] ?? (CHAPTERS[G.ch]||CHAPTERS[8]).title[1])}</span>
     <button id="musicbtn" style="padding:.2em .7em">${G.settings.music!==false?"🎵":"🔇"}</button>
+    ${FS_OK?`<button id="fsbtn" style="padding:.2em .7em">⛶</button>`:""}
     <button id="pausebtn" style="padding:.2em .7em">☰</button>
   </div>`;
 }
@@ -305,6 +306,20 @@ document.addEventListener("click", e=>{
   BGM.setVol();
   b.textContent = G.settings.music!==false ? "🎵" : "🔇";
 }, true);
+// fullscreen toggle (iPhone Safari has no fullscreen API — button hidden there;
+// installing the PWA from the share menu gives fullscreen instead)
+const FS_OK = !!(document.documentElement &&
+  (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen));
+document.addEventListener("click", e=>{
+  if (!e.target.closest("#fsbtn")) return;
+  e.stopPropagation();
+  const d = document.documentElement;
+  if (document.fullscreenElement || document.webkitFullscreenElement)
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  else
+    (d.requestFullscreen || d.webkitRequestFullscreen).call(d);
+}, true);
+document.addEventListener("fullscreenchange", ()=>setTimeout(fitApp, 50));
 
 // ---------- title ----------
 function showTitle(){

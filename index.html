@@ -21,6 +21,8 @@
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html,body{height:100%;}
+/* size to the *visible* viewport so the browser URL bar never covers the game */
+@supports (height:100dvh){ html,body{height:100dvh;} }
 body{
   background:var(--bg); color:var(--text);
   font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",
