@@ -181,6 +181,7 @@ function loadFrom(i){
   const raw = localStorage.getItem(SLOTKEY(i)); if(!raw) return false;
   try{ const d=JSON.parse(raw); G = Object.assign(newState(), d.g);
        G.settings = Object.assign({furigana:true,audio:true}, G.settings);
+       activeQuest = null; stepIdx = 0;
        sessionStart = Date.now(); return true; }
   catch(e){ return false; }
 }
@@ -222,7 +223,9 @@ function stageBgStyle(dark){
 }
 function toast(html, ms){
   const t = el(`<div class="toast">${html}</div>`);
-  app.appendChild(t); setTimeout(()=>t.remove(), ms||2200);
+  // defer one tick: callers re-render app.innerHTML in the same tick,
+  // which would wipe the toast before it's ever seen
+  setTimeout(()=>{ app.appendChild(t); setTimeout(()=>t.remove(), ms||2200); }, 30);
 }
 
 // ---------- scene plumbing ----------
@@ -373,12 +376,18 @@ function talk(npc){
 }
 let activeQuest=null, stepIdx=0, taught=[];
 function startQuest(q){
-  activeQuest=q; stepIdx=0;
+  activeQuest=q;
   taught = q.steps.filter(s=>s.t==="learn").flatMap(s=>s.items);
+  if (G.qstep && G.qstep.q===q.id && G.qstep.s>0){ // resume at the failed step
+    stepIdx = Math.min(G.qstep.s, q.steps.length-1);
+    runStep(); return;
+  }
+  stepIdx=0;
   runDialogue(q.intro.map(l=>l), ()=>runStep());
 }
 function runStep(){
   const q=activeQuest;
+  G.qstep = {q:q.id, s:stepIdx};
   if (stepIdx >= q.steps.length){ finishQuest(); return; }
   const s = q.steps[stepIdx];
   if (s.t==="learn") showStudy(s.kind, s.items, ()=>{ stepIdx++; runStep(); });
@@ -392,6 +401,7 @@ function runStep(){
 function finishQuest(){
   const q=activeQuest; activeQuest=null;
   const after = ()=>{
+    delete G.qstep;
     G.quests[q.id]=true;
     gainXp(q.reward.xp); G.gold += q.reward.gold;
     toast("🏅 "+Lp("questdone")+" +"+q.reward.xp+"✨ +"+q.reward.gold+"🪙", 2600);
@@ -418,13 +428,14 @@ function finishQuest(){
 function runDialogue(lines, done, bg){
   scene="dialogue";
   if (!bg && G) bg = LOCBG[G.map] || asset("scenes","ch"+G.ch); // never a blank backdrop
-  let i=0;
+  let i=0, built=false;
   const render = ()=>{
     if (i>=lines.length){ done(); return; }
     const [sp,en,jp] = lines[i];
     const {main,sub} = pickLang(en,jp);
     const who = sp ? `${NPCS[sp].emoji} ${npcName(sp)}` : "✨";
-    if (!document.getElementById("dlgbase")) {
+    if (!built) { // rebuild per runDialogue call so chained cutscenes get THEIR backdrop
+      built = true;
       const bgHtml = bg ? `<div class="cutscene-bg"><img src="${bg}"></div>` : "";
       app.innerHTML = (G? hudHtml():"") + `<div id="stage" style="background:radial-gradient(ellipse at 50% 30%,#16204a,var(--bg))">${bgHtml}<div id="dlgbase"></div></div>`;
       const pb=document.getElementById("pausebtn"); if(pb) pb.onclick=showPause;
@@ -555,14 +566,21 @@ function kanaQ(id){
   let sameScript = Object.keys(KANA).filter(x=>KANA[x].type===k.type && x.length===id.length);
   const met = sameScript.filter(x=>introduced(x)||taughtNow(x));
   if (met.length>=4) sameScript = met; // distractors only from kana already met
-  const canAudio = G.settings.audio && jaVoice && id!=="っ" && id!=="ー";
+  // recorded mp3s exist for every hiragana sound, so audio questions no
+  // longer depend on a speech-synthesis voice being installed
+  const canAudio = G.settings.audio && id!=="っ" && id!=="ー";
   const modes = [];
   if (canAudio) modes.push("audio");
   if (k.twin) modes.push("twin");
   if (!k.twin) modes.push("hint","glyph2hint");
   const mode = rnd(modes);
   if (mode==="audio"){
-    const opts = distractors(sameScript, id, 3, x=>x);
+    // exclude homophones (を=お, ぢ=じ, づ=ず and their katakana twins):
+    // the player hears one sound, so two identical-sounding options would both be right
+    const HOMO = {"を":"お","ぢ":"じ","づ":"ず","お":"を","じ":"ぢ","ず":"づ"};
+    const soundOf = x => { const h = KANA[x].twin||x; return HOMO[h]||h; };
+    const pool = sameScript.filter(x=>x===id || soundOf(x)!==soundOf(id));
+    const opts = distractors(pool, id, 3, x=>x);
     return {q:`<div class="quiz-q small">${L("whichsound")}</div><div class="quiz-q"><button class="audio-btn" style="font-size:2.4rem" data-say="${esc(k.twin||id)}">🔊</button></div>`,
       opts, a:opts.indexOf(id), id, autosay:k.twin||id};
   }
@@ -611,7 +629,9 @@ function vocabQ(id){
     return {q:`<div class="quiz-q small">${L("whichmeaning")}</div><div class="quiz-q">${v.kj?rubyHtml(v.kj,"　"):esc(v.jp)}</div>`,
       opts, a:opts.indexOf(v.e), id, autosay:v.jp};
   }
-  const opts = distractors(samePool, id, 3, x=>esc(VOCAB[x].jp));
+  // emoji -> word: two words sharing the same emoji would both look correct
+  const emojiSafe = samePool.filter(x=>x===id || VOCAB[x].e!==v.e);
+  const opts = distractors(emojiSafe, id, 3, x=>esc(VOCAB[x].jp));
   return {q:`<div class="quiz-q small">${L("whichjp")}</div><div class="quiz-q">${v.e}</div>`,
     opts, a:opts.indexOf(esc(v.jp)), id};
 }
@@ -801,13 +821,16 @@ function showBattle(s, cb){
 }
 
 // ---------- overlays: pause & friends ----------
+let savedKeyHandler = null;
 function overlay(html){
   const o = el(`<div class="overlay"><div class="box">${html}</div></div>`);
   o.onclick = e=>{ if (e.target===o) closeOverlay(); };
+  savedKeyHandler = keyHandler;             // freeze the scene's keys under the overlay
+  keyHandler = e=>{ if (e.key==="Escape") closeOverlay(); };
   app.appendChild(o);
   return o;
 }
-function closeOverlay(){ document.querySelectorAll(".overlay").forEach(o=>o.remove()); if(scene==="map") keyHandler=mapKeys; }
+function closeOverlay(){ document.querySelectorAll(".overlay").forEach(o=>o.remove()); keyHandler = savedKeyHandler; }
 function showPause(){
   if (document.querySelector(".overlay")) return;
   const o = overlay(`<h2>⏸ ${Lp("paused")}</h2>
@@ -832,8 +855,11 @@ function showPause(){
   o.querySelector("#m_set").onclick=()=>{closeOverlay();showSettings();};
   o.querySelector("#m_save").onclick=()=>{closeOverlay();showSlots("save",()=>{});};
   o.querySelector("#m_load").onclick=()=>{closeOverlay();showSlots("load",()=>{});};
-  o.querySelector("#m_title").onclick=()=>{saveTo(0);showTitle();};
-  keyHandler = e=>{ if(e.key==="Escape"){ closeOverlay(); } };
+  o.querySelector("#m_title").onclick=()=>{
+    // don't clobber a previous run's autosave with a fresh throwaway run
+    if (Object.keys(G.quests).length) saveTo(0);
+    closeOverlay(); showTitle();
+  };
 }
 function backBtn(fn){ return `<div class="foot"><button id="backb">← ${Lp("back")}</button></div>`; }
 function wireBack(o){ o.querySelector("#backb").onclick=closeOverlay; }
