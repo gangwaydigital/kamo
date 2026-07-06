@@ -268,12 +268,23 @@ document.addEventListener("keydown", e=>{
   if (keyHandler) keyHandler(e);
 });
 // scale the fixed 960x680 frame to FILL the viewport — up on big screens,
-// down on small ones, always preserving aspect
+// down on small ones, aspect preserved. On narrow portrait phones the game
+// is rotated 90° so it plays landscape without turning the device setting on.
 function fitApp(){
-  const s = Math.min(window.innerWidth/966, window.innerHeight/686);
-  app.style.transform = `scale(${s})`;
+  const vw = (window.visualViewport && visualViewport.width)  || window.innerWidth;
+  const vh = (window.visualViewport && visualViewport.height) || window.innerHeight;
+  if (vh > vw && vw < 700){ // portrait phone: rotate to landscape
+    const s = Math.min(vh/966, vw/686);
+    app.style.transform = `rotate(90deg) scale(${s})`;
+  } else {
+    const s = Math.min(vw/966, vh/686);
+    app.style.transform = `scale(${s})`;
+  }
 }
-window.addEventListener("resize", fitApp); fitApp();
+window.addEventListener("resize", fitApp);
+window.addEventListener("orientationchange", ()=>setTimeout(fitApp, 250));
+if (window.visualViewport) visualViewport.addEventListener("resize", fitApp);
+fitApp();
 // offline play (https/localhost only — file:// has no service workers)
 if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
   navigator.serviceWorker.register("sw.js").catch(()=>{});

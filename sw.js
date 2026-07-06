@@ -1,7 +1,7 @@
 // カモのことだまクエスト service worker — offline play.
 // Core files: network-first (updates land immediately when online).
 // assets/: cache-first (immutable art/audio, ~30MB over time).
-const CACHE = "kamo-v3";
+const CACHE = "kamo-v4";
 const CORE = ["index.html", "data.js", "data3.js", "quests.js", "assets.js", "quests3.js", "game.js", "manifest.webmanifest"];
 
 self.addEventListener("install", e => {
