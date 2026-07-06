@@ -1,14 +1,21 @@
 # 🦆 カモのことだまクエスト — Kamo's Kotodama Quest
 
+![Kamo flying over Kotodama Island](assets/img/scene_title.jpg)
+
 An RPG that takes you from **zero Japanese to JLPT N4**. You are カモ, a little
 duck washed ashore on an island where words are living spirits (ことだま) — and
 a creeping Silence has stolen them all, including your voice.
 
+| | | |
+|---|---|---|
+| ![Village](assets/img/scene_ch3.jpg) | ![Shrine path](assets/img/scene_ch7.jpg) | ![The King of Silence](assets/img/foe_king.jpg) |
+
 ## Play
 
-Open `index.html` in any modern browser. That's it — no install, no build, no
-network. (Chrome/Safari/Edge recommended; turn your sound on for native
-Japanese pronunciation via the built-in speech synthesizer.)
+Open `index.html` in any modern browser — desktop or phone. That's it: no
+install, no build, no account. All pronunciation is **recorded native audio**
+(683 clips shipped with the game); it also installs as an offline PWA when
+served over HTTPS.
 
 ## How it works
 

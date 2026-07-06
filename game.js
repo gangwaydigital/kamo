@@ -236,6 +236,23 @@ let keyHandler = null;
 document.addEventListener("keydown", e=>{
   if (keyHandler) keyHandler(e);
 });
+// scale the fixed 960x680 frame down to fit small screens
+function fitApp(){
+  const s = Math.min(1, window.innerWidth/970, window.innerHeight/690);
+  app.style.transform = s < 1 ? `scale(${s})` : "";
+}
+window.addEventListener("resize", fitApp); fitApp();
+// offline play (https/localhost only — file:// has no service workers)
+if ("serviceWorker" in navigator && location.protocol.startsWith("http"))
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+// touch d-pad — delegated, present only on the map scene
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".dpad [data-d]");
+  if (!b || scene!=="map") return;
+  const [dx,dy] = b.dataset.d.split(",").map(Number);
+  if (dx>0) G.face="r"; else if (dx<0) G.face="l";
+  tryMove(dx,dy);
+}, true);
 // music toggle lives in the HUD of every scene — one delegated listener
 document.addEventListener("click", e=>{
   const b = e.target.closest("#musicbtn");
@@ -321,7 +338,10 @@ function showMap(){
   }
   html += `</div></div>
     <div class="map-name">${m.name[0] && stage()<2 ? esc(m.name[0]) : T(m.name[1])}</div>
-    <div class="map-hint">${L("moves")}</div></div>`;
+    <div class="map-hint">${L("moves")}</div>
+    <div class="dpad"><button data-d="0,-1">▲</button>
+      <div class="row"><button data-d="-1,0">◀</button><button data-d="1,0">▶</button></div>
+      <button data-d="0,1">▼</button></div></div>`;
   app.innerHTML = html;
   document.getElementById("pausebtn").onclick = showPause;
   keyHandler = mapKeys;
