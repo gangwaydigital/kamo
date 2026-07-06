@@ -84,6 +84,17 @@ const CUTSCENE_LINES = {
   ch8:[[null,null,"さいごの たたかい。しじまの【城|しろ】で、【王|おう】が まっている。"]],
 };
 
+// recorded grammar-example sentences: normalized sentence -> clip
+// (katakana folded to hiragana, whitespace stripped, to match TTS keys)
+function sentKey(s){
+  return String(s).replace(/【[^|】]+\|([^】]+)】/g,"$1").replace(/\s+/g,"")
+    .replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+}
+const SENT_AUDIO = {};
+if (typeof GRAMMAR!=="undefined")
+  for (const g of Object.values(GRAMMAR))
+    SENT_AUDIO[sentKey(g.ex[0][0])] = "assets/audio/"+g.id+".mp3";
+
 // ---------- chiptune BGM (WebAudio, zero assets) ----------
 // ponytail: procedural loops, not authored tracks — swap for real audio files if taste demands
 const BGM = {

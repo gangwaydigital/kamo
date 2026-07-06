@@ -53,10 +53,12 @@ function pickVoice(){
 if (window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 let _clip = null;
 function audioFileFor(text){
-  // pre-generated native audio exists for every vocab word and hiragana sound
-  if (typeof VOCAB!=="undefined" && VOCAB[text]) return "assets/audio/"+encodeURIComponent(text)+".mp3";
-  if (typeof KANA!=="undefined" && KANA[text] && KANA[text].type==="hira" && text!=="っ")
-    return "assets/audio/"+encodeURIComponent(text)+".mp3";
+  // recorded clips exist for all kana sounds, vocab words, kanji readings
+  // and grammar example sentences; a miss 404s and falls back to synthesis
+  const s = text.trim();
+  if (typeof SENT_AUDIO!=="undefined" && SENT_AUDIO[sentKey(s)]) return SENT_AUDIO[sentKey(s)];
+  if (s && s!=="っ" && s!=="ー" && /^[ぁ-ゖァ-ヺー]+$/.test(s) && s.length<=8)
+    return "assets/audio/"+encodeURIComponent(s)+".mp3"; // files keep original kana/katakana names
   return null;
 }
 function speak(text){
