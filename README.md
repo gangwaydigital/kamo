@@ -2,7 +2,7 @@
 
 ![Kamo flying over Kotodama Island](assets/img/scene_title.jpg)
 
-An RPG that takes you from **zero Japanese to JLPT N4**. You are カモ, a little
+An RPG that takes you from **zero Japanese to JLPT N2**. You are カモ, a little
 duck washed ashore on an island where words are living spirits (ことだま) — and
 a creeping Silence has stolen them all, including your voice.
 
