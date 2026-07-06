@@ -274,13 +274,14 @@ document.addEventListener("keydown", e=>{
 function fitApp(){
   const vw = (window.visualViewport && visualViewport.width)  || window.innerWidth;
   const vh = (window.visualViewport && visualViewport.height) || window.innerHeight;
-  if (vh > vw && vw < 700){ // portrait phone: rotate to landscape
-    const s = Math.min(vh/966, vw/686);
-    app.style.transform = `rotate(90deg) scale(${s})`;
-  } else {
-    const s = Math.min(vw/966, vh/686);
-    app.style.transform = `scale(${s})`;
-  }
+  const portrait = vh > vw && vw < 700;
+  const sw = portrait ? vh : vw, sh = portrait ? vw : vh; // screen in game orientation
+  const s = Math.min(sw/966, sh/686);
+  // screens wider than 960:680 (any modern phone): stretch the frame itself
+  // so the game is edge-to-edge instead of letterboxed
+  const w = Math.min(1500, Math.max(960, Math.floor(sw/s) - 8));
+  app.style.width = w + "px";
+  app.style.transform = (portrait ? "rotate(90deg) " : "") + `scale(${s})`;
 }
 window.addEventListener("resize", fitApp);
 window.addEventListener("orientationchange", ()=>setTimeout(fitApp, 250));
