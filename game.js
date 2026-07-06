@@ -82,7 +82,7 @@ function newState(){
   return { hp:30, maxhp:30, xp:0, level:1, gold:0, ch:1,
     map:"shore", x:MAPS.shore.start[0], y:MAPS.shore.start[1],
     mastery:{}, quests:{}, time:0, n5:false, ended:false,
-    settings:{furigana:true, audio:true} };
+    settings:{furigana:true, audio:true, music:true} };
 }
 function stage(){ return G ? (CHAPTERS[G.ch]||{stage:3}).stage : 0; }
 function introduced(id){ return G && id in G.mastery; }
@@ -193,9 +193,11 @@ document.addEventListener("keydown", e=>{
 // ---------- title ----------
 function showTitle(){
   scene="title"; keyHandler=null;
+  BGM.play("title");
   const has = [1,2,3,0].some(i=>slotInfo(i));
-  app.innerHTML = `<div class="title-screen">
-    <div class="title-duck">🦆</div>
+  const bg = asset("scenes","title");
+  app.innerHTML = `<div class="title-screen" ${bg?`style="background-image:linear-gradient(rgba(10,12,26,.45),rgba(10,12,26,.8)),url('${bg}');background-size:cover;background-position:center"`:""}>
+    ${bg?"":'<div class="title-duck">🦆</div>'}
     <div class="title-main">カモのことだまクエスト</div>
     <div class="title-sub">Kamo's Kotodama Quest — ゼロから N4 への RPG</div>
     <div class="title-menu">
@@ -209,9 +211,10 @@ function showTitle(){
     runDialogue([
       [null,"A storm. A long fall. Cold, cold water…\nWhen you wake, the island is quiet. Far too quiet.",null],
       [null,"You are カモ — a little duck blown in from a faraway land. You open your beak to quack hello…\n…but nothing comes out.",null],
+    ], ()=>runDialogue([
       [null,"On this island, words are living spirits — <b>ことだま</b>. A creeping Silence has stolen every one of them, including yours.",null],
       [null,"To fly home, you must gather the word-spirits back… one sound, one word, one story at a time. 🦆✨",null],
-    ], ()=>showMap());
+    ], ()=>showMap(), asset("scenes","ch1")), asset("scenes","opening"));
   };
   document.getElementById("contbtn").onclick = ()=>showSlots("load", showTitle);
 }
@@ -223,9 +226,11 @@ function cellAt(m,x,y){
 }
 function showMap(){
   scene="map";
+  BGM.play(BGM.MAPTRACK[G.map]||"field1");
   const m = mapDef();
   const rows = m.grid.map(r=>Array.from(r));
-  let html = hudHtml() + `<div id="stage"><div class="map-wrap"><div class="map-grid" style="grid-template-columns:repeat(${rows[0].length},34px)">`;
+  const mbg = MAP_BG[G.map] ? ` style="background:${MAP_BG[G.map]}"` : "";
+  let html = hudHtml() + `<div id="stage"><div class="map-wrap"${mbg}><div class="map-grid" style="grid-template-columns:repeat(${rows[0].length},34px)">`;
   for (let y=0;y<rows.length;y++){
     for (let x=0;x<rows[y].length;x++){
       const c = rows[y][x];
@@ -323,20 +328,26 @@ function finishQuest(){
     gainXp(q.reward.xp); G.gold += q.reward.gold;
     toast("🏅 "+Lp("questdone")+" +"+q.reward.xp+"✨ +"+q.reward.gold+"🪙", 2600);
     const chQuests = QUESTS.filter(x=>x.ch===q.ch);
+    let chapterUp = false;
     if (chQuests.every(x=>G.quests[x.id]) && CHAPTERS[q.ch+1]){
-      G.ch = q.ch+1;
+      G.ch = q.ch+1; chapterUp = true;
       if (q.ch===5){ G.n5=true; setTimeout(()=>toast("🎓 "+Lp("n5note"),4200), 1300); }
       else setTimeout(()=>toast("📖 "+Lp("chapterup")+" → "+T(CHAPTERS[G.ch].title[1]),3600), 1300);
     }
     saveTo(0); // autosave
-    if (q.id==="q8_3"){ showEnding(); return; }
-    showMap();
+    const finish = ()=> q.id==="q8_3" ? showEnding() : showMap();
+    if (chapterUp){
+      const key = "ch"+G.ch;
+      const playCh = ()=> CUTSCENE_LINES[key] ? runDialogue(CUTSCENE_LINES[key], finish, asset("scenes",key)) : finish();
+      if (q.ch===5 && CUTSCENE_LINES.n5) runDialogue(CUTSCENE_LINES.n5, playCh, asset("scenes","n5"));
+      else playCh();
+    } else finish();
   };
   if (q.outro) runDialogue(q.outro, after); else after();
 }
 
 // ---------- dialogue ----------
-function runDialogue(lines, done){
+function runDialogue(lines, done, bg){
   scene="dialogue";
   let i=0;
   const render = ()=>{
@@ -345,11 +356,14 @@ function runDialogue(lines, done){
     const {main,sub} = pickLang(en,jp);
     const who = sp ? `${NPCS[sp].emoji} ${npcName(sp)}` : "✨";
     if (!document.getElementById("dlgbase")) {
-      app.innerHTML = (G? hudHtml():"") + `<div id="stage" style="background:radial-gradient(ellipse at 50% 30%,#16204a,var(--bg))"><div id="dlgbase"></div></div>`;
+      const bgHtml = bg ? `<div class="cutscene-bg"><img src="${bg}"></div>` : "";
+      app.innerHTML = (G? hudHtml():"") + `<div id="stage" style="background:radial-gradient(ellipse at 50% 30%,#16204a,var(--bg))">${bgHtml}<div id="dlgbase"></div></div>`;
       const pb=document.getElementById("pausebtn"); if(pb) pb.onclick=showPause;
     }
     const base = document.getElementById("dlgbase");
-    base.innerHTML = `<div class="dlg">
+    const port = sp && asset("portraits",sp);
+    base.innerHTML = `<div class="dlg${port?" has-portrait":""}">
+      ${port?`<img class="dlg-portrait" src="${port}" onerror="this.closest('.dlg').classList.remove('has-portrait');this.remove()">`:""}
       <div class="who">${who}</div>
       <div class="line">${main.replace(/\n/g,"<br>")}</div>
       ${sub?`<div class="sub">${sub}</div>`:""}
@@ -689,7 +703,7 @@ function runQuestions(qs, pass, battle, cb){
     };
   };
   const endBattle = win => {
-    if (win){ sfx(true); toast("⚔️ "+Lp("victory")); G.hp=G.maxhp; cb.onPass ? cb.onPass() : cb.onWin(); }
+    if (win){ sfx(true); BGM.sting(); toast("⚔️ "+Lp("victory")); G.hp=G.maxhp; cb.onPass ? cb.onPass() : cb.onWin(); }
     else cb.onFail ? cb.onFail() : cb.onLose();
   };
   render();
@@ -698,15 +712,19 @@ function battleHead(b){
   const pct = Math.max(0,100*b.foeHp/b.maxHp);
   const nm = b.name[0]&&stage()<2 ? esc(b.name[0]) : T(b.name[1]);
   const hitCls = b.hit ? " hit":""; b.hit=false;
+  const art = b.img ? `<img class="foe-img${hitCls}" src="${b.img}" onerror="this.remove()">`
+                    : `<div class="sprite${hitCls}">${b.sprite}</div>`;
   return `<div class="foe">
     <div class="name">⚔️ ${nm}</div>
-    <div class="sprite${hitCls}">${b.sprite}</div>
+    ${art}
     <div class="hpbar"><div style="width:${pct}%"></div></div></div>`;
 }
 function showBattle(s, cb){
   scene="battle";
+  BGM.play("battle");
   const pool = s.items || taught;
-  const b = {foeHp:s.hp, maxHp:s.hp, dmg:s.dmg, sprite:s.sprite, name:s.name, pool, scope:s.scope};
+  const b = {foeHp:s.hp, maxHp:s.hp, dmg:s.dmg, sprite:s.sprite, name:s.name, pool, scope:s.scope,
+             img: activeQuest ? asset("battles", activeQuest.id) : null};
   toast("⚔️ "+Lp("bosswarn"), 1600);
   const qs = buildQuestions(pool, s.hp+4, s.scope||null);
   runQuestions(qs, null, b, cb);
@@ -816,9 +834,11 @@ function showSettings(){
     <div class="menu-list">
       <button id="s_furi">${L("furigana")}: ${G.settings.furigana?Lp("on"):Lp("off")}</button>
       <button id="s_aud">🔊 ${L("audio")}: ${G.settings.audio?Lp("on"):Lp("off")}</button>
+      <button id="s_mus">🎵 ${G.settings.music!==false?Lp("on"):Lp("off")}</button>
     </div>${backBtn()}`);
   o.querySelector("#s_furi").onclick=()=>{ G.settings.furigana=!G.settings.furigana; closeOverlay(); showSettings(); };
   o.querySelector("#s_aud").onclick=()=>{ G.settings.audio=!G.settings.audio; closeOverlay(); showSettings(); };
+  o.querySelector("#s_mus").onclick=()=>{ G.settings.music=!(G.settings.music!==false); BGM.setVol(); closeOverlay(); showSettings(); };
   wireBack(o);
 }
 function showSlots(mode, after){
@@ -872,9 +892,11 @@ function showSlots(mode, after){
 function showEnding(){
   scene="ending"; keyHandler=null;
   G.ended=true; saveTo(0);
+  BGM.play("ending");
   const words = Object.keys(G.mastery).filter(id=>VOCAB[id]).length;
   const kanji = Object.keys(G.mastery).filter(id=>KANJI[id]).length;
-  app.innerHTML = `<div class="title-screen">
+  const ebg = asset("scenes","ending");
+  app.innerHTML = `<div class="title-screen" ${ebg?`style="background-image:linear-gradient(rgba(10,12,26,.5),rgba(10,12,26,.82)),url('${ebg}');background-size:cover;background-position:center"`:""}>
     <div class="title-duck">🦆✨</div>
     <div class="title-main">おわり</div>
     <div class="reward-box">

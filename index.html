@@ -167,6 +167,29 @@ ruby rt{font-size:.5em; color:var(--gold); opacity:.95;}
 @keyframes toastIn{from{opacity:0; transform:translate(-50%,-16px)}to{opacity:1; transform:translate(-50%,0)}}
 .reward-box{text-align:center; font-size:1.15rem; line-height:2.2;}
 .reward-box .big{font-size:2.6rem;}
+
+/* ---------- generated art ---------- */
+.cutscene-bg{position:absolute; inset:0; overflow:hidden; z-index:0;}
+.cutscene-bg img{width:100%; height:100%; object-fit:cover;
+  animation:kenburns 24s ease-in-out infinite alternate;
+  filter:brightness(.92);}
+@keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.08) translate(-1.5%,-1%)}}
+.cutscene-bg::after{content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(13,15,26,.25) 0%, rgba(13,15,26,0) 35%, rgba(13,15,26,.72) 100%);}
+#dlgbase{position:absolute; inset:0; z-index:1;}
+.dlg.has-portrait{padding-left:120px; min-height:132px;}
+.dlg-portrait{position:absolute; left:14px; bottom:14px; width:92px; height:118px;
+  object-fit:cover; border-radius:12px; border:2px solid var(--gold);
+  box-shadow:0 4px 14px rgba(0,0,0,.5);}
+.foe-img{width:180px; height:180px; object-fit:cover; border-radius:16px;
+  border:3px solid var(--border); box-shadow:0 0 28px rgba(239,68,68,.35);
+  display:inline-block;}
+.foe-img.hit{animation:shake .35s;}
+.map-cell{text-shadow:0 3px 4px rgba(0,0,0,.45);}
+.map-grid{padding:8px; border-radius:12px; background:rgba(0,0,0,.18);
+  box-shadow:inset 0 0 40px rgba(0,0,0,.35);}
+.title-screen{position:relative;}
+.panel, .battle{position:relative;}
 .levelup{color:var(--gold); font-weight:bold; font-size:1.3rem; animation:bob 1s infinite;}
 .audio-btn{font-size:1.3rem; background:none; border:none; cursor:pointer; padding:0 6px;}
 .audio-btn:hover{transform:scale(1.2); background:none;}
@@ -181,6 +204,7 @@ textarea.save-io{width:100%; height:110px; background:var(--panel2); color:var(-
 <div id="app"></div>
 <script src="data.js"></script>
 <script src="quests.js"></script>
+<script src="assets.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

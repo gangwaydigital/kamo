@@ -38,6 +38,11 @@ Japanese pronunciation via the built-in speech synthesizer.)
   review, settings (furigana/voice), save/load.
 - **Saves:** autosave after every quest + 3 manual slots (localStorage) +
   export/import as text for backup or moving devices.
+- **Art & sound:** 35 storybook-watercolor illustrations (title, per-chapter
+  cutscenes, NPC dialogue portraits, boss battle art) in `assets/img/`, plus a
+  procedural WebAudio chiptune engine — Japanese pentatonic area themes, a
+  battle theme, and a victory sting, all generated in code (no audio files).
+  The game still runs fine if `assets/` is deleted (emoji/gradient fallback).
 
 ## Controls
 
