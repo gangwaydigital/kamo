@@ -632,9 +632,10 @@ function grammarQ(id){
   const qs = GQUIZ.filter(x=>x.g===id);
   if (!qs.length) return null;
   const gq = rnd(qs);
-  const opts = gq.opts.map(o=>esc(o));
+  const correct = gq.opts[gq.a];
+  const opts = shuffle(gq.opts).map(o=>esc(o));
   return {q:`<div class="quiz-q small">${L("fillblank")}</div><div class="quiz-q small" style="font-size:1.6rem">${T(gq.q)}</div>`,
-    opts, a:gq.a, id};
+    opts, a:opts.indexOf(esc(correct)), id};
 }
 let _taughtNow = [];
 function taughtNow(id){ return _taughtNow.includes(id); }
